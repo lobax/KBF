@@ -1,6 +1,11 @@
-SRC = brainfuck.rs
 
+.PHONY: clean
 
+all: build/brainfuck
 
-compile: ${SRC} 
+build/brainfuck: brainfuck.rs
+	mkdir -p build
 	rustc brainfuck.rs -o build/brainfuck
+
+clean: 
+	rm -rf build
