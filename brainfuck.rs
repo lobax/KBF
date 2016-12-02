@@ -11,44 +11,63 @@ fn main() {
     let mut input = String::new(); 
     scanline!(input); 
     let tokens = tokenize(&input); 
-    parse(&tokens);
+    interpret(tokens);
 }
 
 
-fn parse(tokens: &VecDeque<Token>) { 
-    let mut mem: [u8; 256] = [0; 256]; 
-    let mut ptr: u8 = 0; 
-    for token in tokens.iter() { 
+fn interpret(tokens: VecDeque<Token>) { 
+    
+    let mut mem: [u8;256] = [0; 256];
+    let mut stack: Vec<usize> =  Vec::new();
+    let mut ip: usize = 0; 
+    let mut ptr: u8 =  0;
+    while ip < tokens.len() { 
+        let token = tokens.get(ip); 
         match token { 
-            &Token::IncrementPtr => { 
-                ptr += 1;
+            Some(&Token::IncrementPtr) => { 
+                if ptr == 255 { 
+                    ptr = 0; 
+                } else { 
+                    ptr += 1;
+                }
             }, 
-            &Token::DecrementPtr => { 
-                ptr -= 1;
+            Some(&Token::DecrementPtr) => { 
+                if ptr == 0 { 
+                    ptr = 255
+                } else { 
+                    ptr -= 1;
+                }
             },
-            &Token::LeftBracket => { 
-                println!("LeftBracket");
+            Some(&Token::LeftBracket) => { 
+                stack.push(ip); 
             },
-            &Token::RightBracket => { 
-                println!("RightBracket");
+            Some(&Token::RightBracket) => { 
+                if mem[ptr as usize] > 0 {
+                    ip = stack.pop().expect("Unmatching brackets!") -1; 
+                }
             },
-            &Token::IncrementVal => { 
+            Some(&Token::IncrementVal) => { 
                 mem[ptr as usize] = mem[ptr as usize] + 1;
             },
-            &Token::DecrementVal => { 
-                mem[ptr as usize] = mem[ptr as usize] - 1;
+            Some(&Token::DecrementVal) => { 
+                if mem[ptr as usize] == 0 {
+                    mem[ptr as usize] = 255;
+                } else { 
+                    mem[ptr as usize] = mem[ptr as usize] - 1;
+                }
             },
-            &Token::InputVal => { 
+            Some(&Token::InputVal)=> { 
                 println!("InputVal");
             },
-            &Token::OutputVal => { 
-                println!("{}", mem[ptr as usize]);
+            Some(&Token::OutputVal) => { 
+                print!("{}", mem[ptr as usize] as char);
             },
+            None => {},
         }
+        ip += 1; 
     }
-
+    println!("");
 }
-
 
 enum Token { 
     IncrementPtr,
@@ -89,10 +108,10 @@ fn tokenize(input: &String) -> VecDeque<Token> {
             ',' => {
                 tkns.push_back(Token::InputVal); 
             },
-            '\n' => println!("NewLine"),
+            '\n' => {},
+            ' ' => {},
             _ => println!("Error"),
         }
     }
-    println!("END"); 
     tkns
 }
