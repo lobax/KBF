@@ -1,4 +1,4 @@
-#Kristian Brain Fuck
+# Kristian Brain Fuck
 
 A simple brainfuck interpreter written in Rust. 
 
